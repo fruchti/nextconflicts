@@ -1,0 +1,33 @@
+#!/bin/sh
+
+action=""
+if [[ "$1" == "local" ]] ; then
+    echo "Keeping local changes."
+    action="local"
+elif [[ "$1" == "remote" ]] ; then
+    echo "Keeping remote version."
+    action="remote"
+elif [[ "$1" == "" ]] ; then
+    echo "Usage: $0 [remote|local]"
+    echo "Conflicting files:"
+fi
+
+regex="^(.*)(_conflict-[0-9]{8}-[0-9]{6})(\..*$|$)"
+find -regextype posix-extended -regex "$regex" -print0 | while IFS= read -r -d $'\0' file; do 
+    part1="`echo "$file" | sed -r "s/$regex/\1/g"`"
+    part2="`echo "$file" | sed -r "s/$regex/\2/g"`"
+    part3="`echo "$file" | sed -r "s/$regex/\3/g"`"
+    if [ ! -e "$part1$part3" ] ; then
+        echo "Error: $part1$part3 does not exist"
+    else
+        if [[ $action == "" ]] ; then
+            echo -e "$part1\e[31m$part2\e[39m$part3"
+        elif [[ $action == "remote" ]] ; then
+            echo -e "Deleting $part1\e[31m$part2\e[39m$part3"
+            rm "$part1$part2$part3"
+        elif [[ $action == "local" ]] ; then
+            echo -e "$part1\e[31m$part2\e[39m$part3 -> $part1$part3"
+            mv "$part1$part2$part3" "$part1$part3"
+        fi
+    fi
+done
