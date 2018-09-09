@@ -12,7 +12,7 @@ elif [[ "$1" == "" ]] ; then
     echo "Conflicting files:"
 fi
 
-regex="^(.*)(_conflict-[0-9]{8}-[0-9]{6})(\..*$|$)"
+regex="^(.*)( \(conflicted copy [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{6}\))(\..*$|$)"
 find -regextype posix-extended -regex "$regex" -print0 | while IFS= read -r -d $'\0' file; do 
     part1="`echo "$file" | sed -r "s/$regex/\1/g"`"
     part2="`echo "$file" | sed -r "s/$regex/\2/g"`"
